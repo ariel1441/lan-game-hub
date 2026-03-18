@@ -8,6 +8,8 @@ Start by linking the repo and, if needed, pasting:
 - `NEW_GAME_WORKFLOW.md`
 - the relevant issue or screenshot
 
+If you are browsing the repository, these files now live under `docs/`.
+
 ## 1. Design A New Game
 
 ```text
@@ -129,4 +131,3 @@ Here is the current code / file:
 
 <PASTE FILE OR SUMMARY HERE>
 ```
-

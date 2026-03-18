@@ -1,25 +1,28 @@
 import type { Server } from 'socket.io';
 import { roomStore } from '../rooms/room.store.js';
 import { roomService } from '../rooms/room.service.js';
-import type { PublicRoom } from '../rooms/room.types.js';
 import type { ClientToServerEvents, ServerToClientEvents } from './socket.types.js';
 
 const emitRoomUpdated = (
   io: Server<ClientToServerEvents, ServerToClientEvents>,
-  room: PublicRoom,
+  roomCode: string,
 ): void => {
+  const room = roomStore.getRoom(roomCode);
+  if (!room) {
+    return;
+  }
+
   for (const player of room.players) {
-    const socketId = roomStore
-      .getRoom(room.code)
-      ?.players.find((roomPlayer) => roomPlayer.id === player.id)
-      ?.socketId;
+    const socketId = player.socketId;
 
     if (!socketId) {
       continue;
     }
 
+    const publicRoom = roomService.getPublicRoomForPlayer(room, player.id);
+
     io.to(socketId).emit('room:updated', {
-      room,
+      room: publicRoom,
       you: {
         playerId: player.id,
         isHost: player.isHost,
@@ -42,7 +45,7 @@ export const registerSocketHandlers = (io: Server<ClientToServerEvents, ServerTo
       }
 
       socket.join(result.data.roomCode);
-      emitRoomUpdated(io, result.data.room);
+      emitRoomUpdated(io, result.data.roomCode);
 
       callback({
         ok: true,
@@ -65,7 +68,7 @@ export const registerSocketHandlers = (io: Server<ClientToServerEvents, ServerTo
       }
 
       socket.join(result.data.roomCode);
-      emitRoomUpdated(io, result.data.room);
+      emitRoomUpdated(io, result.data.roomCode);
 
       callback({
         ok: true,
@@ -89,7 +92,7 @@ export const registerSocketHandlers = (io: Server<ClientToServerEvents, ServerTo
         return;
       }
 
-      emitRoomUpdated(io, result.room);
+      emitRoomUpdated(io, result.roomCode);
       callback?.({ ok: true });
     });
 
@@ -104,7 +107,7 @@ export const registerSocketHandlers = (io: Server<ClientToServerEvents, ServerTo
         return;
       }
 
-      emitRoomUpdated(io, result.data.room);
+      emitRoomUpdated(io, result.data.room.code);
       callback?.({ ok: true });
     });
 
@@ -119,7 +122,7 @@ export const registerSocketHandlers = (io: Server<ClientToServerEvents, ServerTo
         return;
       }
 
-      emitRoomUpdated(io, result.data.room);
+      emitRoomUpdated(io, result.data.room.code);
       callback?.({ ok: true });
     });
 
@@ -131,7 +134,7 @@ export const registerSocketHandlers = (io: Server<ClientToServerEvents, ServerTo
         return;
       }
 
-      emitRoomUpdated(io, result.data.room);
+      emitRoomUpdated(io, result.data.room.code);
       callback?.({ ok: true });
     });
 
@@ -146,7 +149,7 @@ export const registerSocketHandlers = (io: Server<ClientToServerEvents, ServerTo
         return;
       }
 
-      emitRoomUpdated(io, result.data.room);
+      emitRoomUpdated(io, result.data.room.code);
       callback?.({ ok: true });
     });
 
@@ -159,7 +162,7 @@ export const registerSocketHandlers = (io: Server<ClientToServerEvents, ServerTo
       }
 
       if (result.kind === 'room_updated') {
-        emitRoomUpdated(io, result.room);
+        emitRoomUpdated(io, result.roomCode);
       }
     });
   });

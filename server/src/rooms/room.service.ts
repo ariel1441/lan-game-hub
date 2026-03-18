@@ -25,7 +25,7 @@ const validatePlayerName = (value: string): string | null => {
   return null;
 };
 
-const toPublicRoom = (room: Room): PublicRoom => ({
+const toPublicRoom = (room: Room, viewerPlayerId?: string): PublicRoom => ({
   code: room.code,
   status: room.status,
   hostPlayerId: room.hostPlayerId,
@@ -36,7 +36,7 @@ const toPublicRoom = (room: Room): PublicRoom => ({
     ? {
       gameId: room.gameSession.gameId,
       startedAt: room.gameSession.startedAt,
-      state: gameService.getPublicGameState(room),
+      state: gameService.getPublicGameStateForViewer(room, viewerPlayerId),
     }
     : null,
   players: room.players.map((player) => ({
@@ -87,6 +87,10 @@ const getRoomAndMembership = (socketId: string): {
 };
 
 export class RoomService {
+  getPublicRoomForPlayer(room: Room, playerId?: string): PublicRoom {
+    return toPublicRoom(room, playerId);
+  }
+
   createRoom(params: { playerName: string; socketId: string }): ServiceResponse<{
     room: PublicRoom;
     playerId: string;
@@ -205,7 +209,7 @@ export class RoomService {
 
     room.selectedGameId = params.gameId;
     roomStore.setRoom(room);
-    return { ok: true, data: { room: toPublicRoom(room) } };
+    return { ok: true, data: { room: toPublicRoom(room, membership.playerId) } };
   }
 
   startSelectedGame(params: {
@@ -241,7 +245,7 @@ export class RoomService {
     }
 
     roomStore.setRoom(startResult.room);
-    return { ok: true, data: { room: toPublicRoom(startResult.room) } };
+    return { ok: true, data: { room: toPublicRoom(startResult.room, membership.playerId) } };
   }
 
   returnToLobby(params: { socketId: string }): ServiceResponse<{ room: PublicRoom }> {
@@ -258,7 +262,7 @@ export class RoomService {
     room.status = 'lobby';
     room.gameSession = null;
     roomStore.setRoom(room);
-    return { ok: true, data: { room: toPublicRoom(room) } };
+    return { ok: true, data: { room: toPublicRoom(room, membership.playerId) } };
   }
 
   handleGameAction(params: {
@@ -282,13 +286,13 @@ export class RoomService {
     }
 
     roomStore.setRoom(actionResult.room);
-    return { ok: true, data: { room: toPublicRoom(actionResult.room) } };
+    return { ok: true, data: { room: toPublicRoom(actionResult.room, membership.playerId) } };
   }
 
   leaveRoomBySocketId(socketId: string):
     | { kind: 'not_found' }
     | { kind: 'room_closed'; roomCode: string; reason: string }
-    | { kind: 'room_updated'; room: PublicRoom; roomCode: string } {
+    | { kind: 'room_updated'; room: Room; roomCode: string } {
     const membership = roomStore.getMembership(socketId);
     if (!membership) {
       return { kind: 'not_found' };
@@ -306,7 +310,7 @@ export class RoomService {
 
     if (!leavingPlayer) {
       roomStore.setRoom(room);
-      return { kind: 'room_updated', room: toPublicRoom(room), roomCode: room.code };
+      return { kind: 'room_updated', room, roomCode: room.code };
     }
 
     if (leavingPlayer.isHost) {
@@ -336,7 +340,7 @@ export class RoomService {
     roomStore.setRoom(room);
     return {
       kind: 'room_updated',
-      room: toPublicRoom(room),
+      room,
       roomCode: room.code,
     };
   }

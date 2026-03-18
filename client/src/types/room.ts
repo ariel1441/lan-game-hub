@@ -12,6 +12,13 @@ export type GameSummary = {
   description: string;
   minPlayers: number;
   maxPlayers: number;
+  setup: {
+    mode: 'all_players' | 'selected_players';
+    minSelectedPlayers?: number;
+    maxSelectedPlayers?: number;
+    setupTitle?: string;
+    setupDescription?: string;
+  };
 };
 
 export type Connect4Cell = null | 'R' | 'Y';
@@ -28,6 +35,83 @@ export type Connect4State = {
   scores: Record<string, number>;
   roundNumber: number;
   moveCount: number;
+};
+
+export type WouldYouRatherChoice = 'left' | 'right';
+
+export type WouldYouRatherPrompt = {
+  id: string;
+  left: string;
+  right: string;
+};
+
+export type WouldYouRatherState = {
+  phase: 'answering' | 'revealed';
+  playerIds: string[];
+  roundNumber: number;
+  prompt: WouldYouRatherPrompt;
+  submittedPlayerIds: string[];
+  answerCounts: {
+    left: number;
+    right: number;
+  };
+  answers: Record<string, WouldYouRatherChoice> | null;
+  revealedAt: number | null;
+};
+
+export type ImposterPhase = 'revealing_roles' | 'discussion' | 'voting' | 'result';
+
+export type ImposterRole = 'imposter' | 'crew';
+
+export type ImposterWinner = 'imposter' | 'crew' | null;
+
+export type ImposterState = {
+  phase: ImposterPhase;
+  playerIds: string[];
+  roundNumber: number;
+  yourRole: ImposterRole | null;
+  secretWord: string | null;
+  votesSubmittedBy: string[];
+  votes: Record<string, string> | null;
+  imposterPlayerId: string | null;
+  eliminatedPlayerId: string | null;
+  winner: ImposterWinner;
+};
+
+export type CheckersPieceColor = 'red' | 'black';
+
+export type CheckersPieceKind = 'man' | 'king';
+
+export type CheckersPiece = {
+  color: CheckersPieceColor;
+  kind: CheckersPieceKind;
+};
+
+export type CheckersCell = CheckersPiece | null;
+
+export type CheckersPosition = {
+  row: number;
+  col: number;
+};
+
+export type CheckersMove = {
+  path: CheckersPosition[];
+  captured: CheckersPosition[];
+  promotes: boolean;
+};
+
+export type CheckersState = {
+  phase: 'playing' | 'finished';
+  board: CheckersCell[][];
+  playerIds: [string, string];
+  currentTurnPlayerId: string;
+  startingPlayerId: string;
+  winnerPlayerId: string | null;
+  result: 'win' | 'draw' | null;
+  scores: Record<string, number>;
+  roundNumber: number;
+  lastMove: CheckersMove | null;
+  movesSinceProgress: number;
 };
 
 export type PublicGameSession = {

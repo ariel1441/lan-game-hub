@@ -36,6 +36,13 @@ export const connect4Game: GameModule<Connect4State> = {
   description: 'Take turns dropping pieces into a shared board. First to connect four wins the round.',
   minPlayers: 2,
   maxPlayers: 2,
+  setup: {
+    mode: 'selected_players',
+    minSelectedPlayers: 2,
+    maxSelectedPlayers: 2,
+    setupTitle: 'Connect 4 setup',
+    setupDescription: 'Choose exactly 2 active players for this match, then start the game.',
+  },
   getPlayerCount: ({ players, options }) => {
     const selectedPlayers = validateSelectedPlayerIds(options?.activePlayerIds, players);
     return selectedPlayers.ok ? selectedPlayers.playerIds.length : players.length;

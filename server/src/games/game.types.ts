@@ -9,12 +9,23 @@ export type GameAction = {
   payload?: unknown;
 };
 
+export type GameSetupMode = 'all_players' | 'selected_players';
+
+export type GameSetupDefinition = {
+  mode: GameSetupMode;
+  minSelectedPlayers?: number;
+  maxSelectedPlayers?: number;
+  setupTitle?: string;
+  setupDescription?: string;
+};
+
 export type GameDefinition = {
   id: string;
   name: string;
   description: string;
   minPlayers: number;
   maxPlayers: number;
+  setup: GameSetupDefinition;
 };
 
 export type GameModule<TState = unknown> = GameDefinition & {
@@ -33,6 +44,7 @@ export type GameModule<TState = unknown> = GameDefinition & {
   getPublicState: (params: {
     state: TState;
     players: BasicPlayer[];
+    viewerPlayerId?: string;
   }) => unknown;
   handleAction: (params: {
     state: TState;

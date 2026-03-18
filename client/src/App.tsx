@@ -9,7 +9,7 @@ export const App = () => {
       <div
         className={`mx-auto flex w-full flex-col ${
           isRoomRoute
-            ? 'h-screen max-w-none overflow-hidden px-3 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-5'
+            ? 'min-h-screen max-w-none overflow-x-hidden px-3 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-5'
             : 'min-h-screen max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8'
         }`}
       >
@@ -33,8 +33,8 @@ export const App = () => {
           </header>
         ) : null}
 
-        <main className={`flex flex-1 ${isRoomRoute ? 'min-h-0 items-stretch' : 'items-center'}`}>
-          <div className={`w-full ${isRoomRoute ? 'min-h-0' : ''}`}>
+        <main className={`flex flex-1 ${isRoomRoute ? 'items-stretch' : 'items-center'}`}>
+          <div className={`w-full ${isRoomRoute ? '' : ''}`}>
             <Outlet />
           </div>
         </main>

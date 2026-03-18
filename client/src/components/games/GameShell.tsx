@@ -1,5 +1,8 @@
 import type { PublicRoom } from '../../types/room';
+import { CheckersView } from './checkers/CheckersView';
 import { Connect4View } from './connect4/Connect4View';
+import { ImposterView } from './imposter/ImposterView';
+import { WouldYouRatherView } from './would-you-rather/WouldYouRatherView';
 
 type GameShellProps = {
   room: PublicRoom;
@@ -14,9 +17,18 @@ export const GameShell = ({ room, currentPlayerId, isHost, onReturnToLobby, onGa
     return null;
   }
 
-  if (room.gameSession.gameId === 'connect4') {
+  const renderers = {
+    connect4: Connect4View,
+    checkers: CheckersView,
+    'would-you-rather': WouldYouRatherView,
+    imposter: ImposterView,
+  } as const;
+
+  const Renderer = renderers[room.gameSession.gameId as keyof typeof renderers];
+
+  if (Renderer) {
     return (
-      <Connect4View
+      <Renderer
         room={room}
         currentPlayerId={currentPlayerId}
         isHost={isHost}

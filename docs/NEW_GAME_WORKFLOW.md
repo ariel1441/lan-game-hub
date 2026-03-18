@@ -129,7 +129,7 @@ Before calling a new game "integrated", verify:
 When working from phone:
 
 1. open the GitHub issue for the game
-2. open `PROJECT_BRIEF.md`
+2. open `docs/PROJECT_BRIEF.md`
 3. paste the game spec into ChatGPT
 4. ask for a file-by-file plan
 5. ask for exact code changes
@@ -154,4 +154,3 @@ Why:
 - `Imposter`
 - `Trivia`
 - `Mastermind`
-

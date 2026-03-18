@@ -53,13 +53,20 @@ export const RoomPage = () => {
     : 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200';
 
   const selectedGame = room?.availableGames.find((game) => game.id === room.selectedGameId) ?? null;
+  const selectedGameSetup = selectedGame?.setup ?? null;
+  const requiresSelectedPlayers = selectedGameSetup?.mode === 'selected_players';
+  const requiredSelectedPlayers = selectedGameSetup?.maxSelectedPlayers ?? selectedGameSetup?.minSelectedPlayers ?? 2;
   const selectedPlayersStillInRoom = !!room
     && selectedPlayerIds.every((playerId) => room.players.some((player) => player.id === playerId));
-  const canStartConnect4 = !!room
+  const canStartTwoPlayerGame = !!room
     && room.status === 'lobby'
-    && room.selectedGameId === 'connect4'
-    && selectedPlayerIds.length === 2
+    && requiresSelectedPlayers
+    && selectedPlayerIds.length === requiredSelectedPlayers
     && selectedPlayersStillInRoom;
+  const canStartSelectedGame = !!room
+    && room.status === 'lobby'
+    && !!room.selectedGameId
+    && (requiresSelectedPlayers ? canStartTwoPlayerGame : true);
 
   const lobbyHint = useMemo(() => {
     if (!room) {
@@ -70,16 +77,16 @@ export const RoomPage = () => {
       return 'Select a game to continue.';
     }
 
-    if (room.selectedGameId === 'connect4' && selectedPlayerIds.length !== 2) {
-      return 'Choose the 2 active players before starting.';
+    if (requiresSelectedPlayers && selectedPlayerIds.length !== requiredSelectedPlayers) {
+      return `Choose the ${requiredSelectedPlayers} active players before starting.`;
     }
 
-    if (room.selectedGameId === 'connect4' && !selectedPlayersStillInRoom) {
+    if (requiresSelectedPlayers && !selectedPlayersStillInRoom) {
       return 'One of the selected players is no longer in the room. Choose the active players again.';
     }
 
     return selectedGame ? `${selectedGame.name} is ready to start.` : 'The selected game is ready.';
-  }, [room, selectedGame, selectedPlayerIds.length, selectedPlayersStillInRoom]);
+  }, [requiredSelectedPlayers, room, requiresSelectedPlayers, selectedGame, selectedPlayerIds.length, selectedPlayersStillInRoom]);
 
   const handleLeave = async () => {
     await leaveRoom();
@@ -106,12 +113,12 @@ export const RoomPage = () => {
   };
 
   const handleStartGame = async () => {
-    if (!canStartConnect4) {
+    if (!canStartSelectedGame || !room?.selectedGameId) {
       return;
     }
 
     setIsStartingGame(true);
-    await startGame({ activePlayerIds: selectedPlayerIds });
+    await startGame(requiresSelectedPlayers ? { activePlayerIds: selectedPlayerIds } : undefined);
     setIsStartingGame(false);
   };
 
@@ -155,27 +162,38 @@ export const RoomPage = () => {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <section className="rounded-[32px] border border-white/10 bg-slate-950/60 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur sm:p-8">
+    <div className="mx-auto max-w-[1380px] space-y-5">
+      <section className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.88),rgba(2,6,23,0.92))] p-5 shadow-2xl shadow-slate-950/30 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
             <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${badgeClassName}`}>
               {isHost ? 'Host view' : 'Player view'}
             </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight text-white sm:text-[2.6rem]">
               {isHost ? 'Choose a game and get the room ready' : 'Waiting for the host to start the game'}
             </h2>
-            <p className="mt-4 text-sm leading-6 text-slate-300 sm:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
               {isHost
                 ? 'Select one of the available games, configure any game-specific options, and start the session when the room is ready.'
                 : 'The host is choosing the first game. Stay connected - when the game starts, this page will switch automatically.'}
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
+                Room {activeRoomCode}
+              </span>
+              {selectedGame ? (
+                <span className="rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-200">
+                  {selectedGame.name} selected
+                </span>
+              ) : null}
+            </div>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-stretch">
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 lg:min-w-[190px]">
               <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Status</div>
               <div className="mt-2 font-medium text-white">{selectedGame ? `${selectedGame.name} selected` : 'Choose a game'}</div>
+              <div className="mt-1 text-xs text-slate-400">{room.players.length} players in the lobby</div>
             </div>
             <button
               type="button"
@@ -188,7 +206,7 @@ export const RoomPage = () => {
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[380px_1fr]">
+      <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
         <div className="space-y-6">
           <RoomCodeCard roomCode={activeRoomCode} />
 
@@ -199,7 +217,7 @@ export const RoomPage = () => {
               onSelect={handleSelectGame}
             />
           ) : (
-            <section className="rounded-[28px] border border-white/10 bg-slate-950/60 p-6 shadow-2xl shadow-slate-950/20 backdrop-blur">
+            <section className="rounded-[28px] border border-white/10 bg-slate-950/55 p-6 shadow-2xl shadow-slate-950/20 backdrop-blur">
               <h3 className="text-lg font-semibold text-white">Lobby status</h3>
               <p className="mt-3 text-sm leading-6 text-slate-300">
                 {selectedGame
@@ -213,23 +231,23 @@ export const RoomPage = () => {
         <div className="space-y-6">
           <PlayerList players={room.players} currentPlayerId={currentPlayerId} />
 
-          {room.selectedGameId === 'connect4' ? (
-            <section className="rounded-[28px] border border-white/10 bg-slate-950/60 p-6 shadow-2xl shadow-slate-950/20 backdrop-blur">
+          {requiresSelectedPlayers ? (
+            <section className="rounded-[28px] border border-white/10 bg-slate-950/55 p-6 shadow-2xl shadow-slate-950/20 backdrop-blur">
               <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Connect 4 setup</h3>
+                  <h3 className="text-lg font-semibold text-white">{selectedGameSetup?.setupTitle ?? `${selectedGame?.name ?? 'Game'} setup`}</h3>
                   <p className="mt-3 text-sm leading-6 text-slate-300">
-                    Choose exactly 2 active players for this match, then start the game.
+                    {selectedGameSetup?.setupDescription ?? `Choose exactly ${requiredSelectedPlayers} active players for this match, then start the game.`}
                   </p>
                 </div>
                 {isHost ? (
                   <button
                     type="button"
-                    disabled={!canStartConnect4 || isStartingGame}
+                    disabled={!canStartTwoPlayerGame || isStartingGame}
                     onClick={handleStartGame}
                     className="inline-flex items-center justify-center rounded-2xl bg-sky-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {isStartingGame ? 'Starting...' : 'Start Connect 4'}
+                    {isStartingGame ? 'Starting...' : `Start ${selectedGame?.name ?? 'game'}`}
                   </button>
                 ) : null}
               </div>
@@ -265,6 +283,31 @@ export const RoomPage = () => {
                     </button>
                   );
                 })}
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
+                {lobbyHint}
+              </div>
+            </section>
+          ) : room.selectedGameId ? (
+            <section className="rounded-[28px] border border-white/10 bg-slate-950/55 p-6 shadow-2xl shadow-slate-950/20 backdrop-blur">
+              <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">{selectedGameSetup?.setupTitle ?? `${selectedGame?.name ?? 'Game'} setup`}</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">
+                    {selectedGameSetup?.setupDescription ?? 'This game is ready to start using the current room players.'}
+                  </p>
+                </div>
+                {isHost ? (
+                  <button
+                    type="button"
+                    disabled={!canStartSelectedGame || isStartingGame}
+                    onClick={handleStartGame}
+                    className="inline-flex items-center justify-center rounded-2xl bg-sky-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isStartingGame ? 'Starting...' : `Start ${selectedGame?.name ?? 'game'}`}
+                  </button>
+                ) : null}
               </div>
 
               <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">

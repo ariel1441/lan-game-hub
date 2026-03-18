@@ -67,6 +67,10 @@ export class GameService {
   }
 
   getPublicGameState(room: Room): unknown | null {
+    return this.getPublicGameStateForViewer(room);
+  }
+
+  getPublicGameStateForViewer(room: Room, viewerPlayerId?: string): unknown | null {
     if (!room.gameSession) {
       return null;
     }
@@ -79,6 +83,7 @@ export class GameService {
     return game.getPublicState({
       state: room.gameSession.state,
       players: toBasicPlayers(room),
+      viewerPlayerId,
     });
   }
 
