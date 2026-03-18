@@ -25,9 +25,9 @@ export const Connect4Sidebar = ({
   const statusText = isWinner ? 'Winner' : isCurrentTurn ? 'Your move' : 'Waiting';
 
   return (
-    <div className={`flex items-center gap-3 ${align === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}>
+    <div className={`flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.04] px-3 py-3 ${align === 'right' ? 'justify-end text-right' : 'justify-start text-left'}`}>
       {align === 'right' ? (
-        <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-semibold text-white">
+        <div className="rounded-full border border-white/10 bg-slate-950/70 px-3 py-1 text-sm font-semibold text-white">
           {score}
         </div>
       ) : null}
@@ -40,7 +40,7 @@ export const Connect4Sidebar = ({
       <div className={`h-9 w-9 shrink-0 rounded-full border ${chipClassName} ${align === 'right' ? 'order-1' : ''}`} />
 
       {align === 'left' ? (
-        <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-semibold text-white">
+        <div className="rounded-full border border-white/10 bg-slate-950/70 px-3 py-1 text-sm font-semibold text-white">
           {score}
         </div>
       ) : null}

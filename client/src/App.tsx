@@ -5,7 +5,7 @@ export const App = () => {
   const isRoomRoute = location.pathname.startsWith('/room/');
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_34%),radial-gradient(circle_at_bottom,_rgba(14,165,233,0.08),_transparent_28%),linear-gradient(180deg,_#020617_0%,_#071224_45%,_#0b1730_100%)] text-slate-100">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.12),_transparent_28%),radial-gradient(circle_at_20%_80%,_rgba(59,130,246,0.08),_transparent_26%),linear-gradient(180deg,_#030712_0%,_#09111f_42%,_#0f1b31_100%)] text-slate-100">
       <div
         className={`mx-auto flex w-full flex-col ${
           isRoomRoute
@@ -14,10 +14,10 @@ export const App = () => {
         }`}
       >
         {!isRoomRoute ? (
-          <header className="mb-8 rounded-[28px] border border-white/10 bg-slate-950/40 px-5 py-5 shadow-2xl shadow-slate-950/30 backdrop-blur sm:px-7">
+          <header className="mb-8 rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(17,24,39,0.78),rgba(8,15,30,0.86))] px-5 py-5 shadow-[0_24px_70px_rgba(2,8,23,0.3)] backdrop-blur sm:px-7">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-sky-300/90">LAN Game Hub</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-cyan-200/90">LAN Game Hub</p>
                 <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                   Local multiplayer, one host, instant join
                 </h1>

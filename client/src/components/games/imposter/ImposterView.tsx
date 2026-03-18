@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ImposterState, PublicRoom } from '../../../types/room';
+import { GameBadge, GameHud, GamePage, GamePanel, GamePrimaryButton, GameSecondaryButton } from '../shared/GameChrome';
 
 type ImposterViewProps = {
   room: PublicRoom;
@@ -92,68 +93,46 @@ export const ImposterView = ({
   };
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-[1280px] min-h-0 flex-col gap-4 overflow-hidden">
-      <section className="shrink-0 rounded-[24px] border border-white/10 bg-slate-950/55 px-5 py-4 shadow-2xl shadow-slate-950/20 backdrop-blur">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-sky-200">Imposter</div>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white">{statusText}</h2>
-            <p className="mt-2 text-sm text-slate-300">{subtitle}</p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
-              Round {state.roundNumber}
-            </div>
-            <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
-              {totalPlayers} players
-            </div>
+    <GamePage>
+      <GameHud
+        eyebrow="Imposter"
+        title={statusText}
+        subtitle={subtitle}
+        rightSlot={(
+          <>
+            <GameBadge tone="neutral">Round {state.roundNumber}</GameBadge>
+            <GameBadge tone="neutral">{totalPlayers} players</GameBadge>
+            <GameBadge tone={state.phase === 'result' ? 'accent' : 'danger'}>{state.phase.replace('_', ' ')}</GameBadge>
+          </>
+        )}
+        bottomSlot={(
+          <>
             {isHost && state.phase === 'revealing_roles' ? (
-              <button
-                type="button"
-                disabled={isAdvancing}
-                onClick={() => handleHostAction({ type: 'START_DISCUSSION' })}
-                className="inline-flex items-center justify-center rounded-full bg-sky-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-70"
-              >
+              <GamePrimaryButton disabled={isAdvancing} onClick={() => handleHostAction({ type: 'START_DISCUSSION' })}>
                 {isAdvancing ? 'Starting...' : 'Start discussion'}
-              </button>
+              </GamePrimaryButton>
             ) : null}
             {isHost && state.phase === 'discussion' ? (
-              <button
-                type="button"
-                disabled={isAdvancing}
-                onClick={() => handleHostAction({ type: 'START_VOTING' })}
-                className="inline-flex items-center justify-center rounded-full bg-sky-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-70"
-              >
+              <GamePrimaryButton disabled={isAdvancing} onClick={() => handleHostAction({ type: 'START_VOTING' })}>
                 {isAdvancing ? 'Starting...' : 'Start voting'}
-              </button>
+              </GamePrimaryButton>
             ) : null}
             {isHost && state.phase === 'result' ? (
-              <button
-                type="button"
-                disabled={isAdvancing}
-                onClick={() => handleHostAction({ type: 'NEXT_ROUND' })}
-                className="inline-flex items-center justify-center rounded-full bg-sky-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-70"
-              >
+              <GamePrimaryButton disabled={isAdvancing} onClick={() => handleHostAction({ type: 'NEXT_ROUND' })}>
                 {isAdvancing ? 'Starting...' : 'Next round'}
-              </button>
+              </GamePrimaryButton>
             ) : null}
             {isHost ? (
-              <button
-                type="button"
-                disabled={isReturning}
-                onClick={handleReturnToLobby}
-                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-70"
-              >
+              <GameSecondaryButton disabled={isReturning} onClick={handleReturnToLobby}>
                 {isReturning ? 'Returning...' : 'Return to lobby'}
-              </button>
+              </GameSecondaryButton>
             ) : null}
-          </div>
-        </div>
-      </section>
+          </>
+        )}
+      />
 
       <section className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="min-h-0 rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.12),transparent_35%),linear-gradient(180deg,rgba(2,6,23,0.82),rgba(15,23,42,0.72))] p-5 shadow-2xl shadow-slate-950/30">
+        <GamePanel>
           <div className="flex h-full min-h-0 flex-col justify-between gap-6">
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-400">Role card</div>
@@ -219,9 +198,9 @@ export const ImposterView = ({
               </div>
             )}
           </div>
-        </div>
+        </GamePanel>
 
-        <aside className="min-h-0 rounded-[28px] border border-white/10 bg-slate-950/55 p-5 shadow-2xl shadow-slate-950/20 backdrop-blur">
+        <GamePanel className="backdrop-blur">
           <div className="flex h-full min-h-0 flex-col gap-5">
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-400">Players</div>
@@ -297,8 +276,8 @@ export const ImposterView = ({
               </div>
             )}
           </div>
-        </aside>
+        </GamePanel>
       </section>
-    </div>
+    </GamePage>
   );
 };

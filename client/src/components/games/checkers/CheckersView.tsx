@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { CheckersMove, CheckersPosition, CheckersState, PublicRoom } from '../../../types/room';
 import { CheckersBoard } from './CheckersBoard';
 import { getLegalMovesForColor, getPlayerColor, pathPrefixMatches } from './checkers.helpers';
+import { GameBadge, GameHud, GamePage, GamePanel, GamePrimaryButton, GameSecondaryButton } from '../shared/GameChrome';
 
 type CheckersViewProps = {
   room: PublicRoom;
@@ -186,48 +187,38 @@ export const CheckersView = ({
   }
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-[1340px] min-h-0 flex-col gap-4 overflow-hidden">
-      <section className="shrink-0 rounded-[24px] border border-white/10 bg-slate-950/55 px-5 py-4 shadow-2xl shadow-slate-950/20 backdrop-blur">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-sky-200">Checkers</div>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white">{statusText}</h2>
-            <p className="mt-2 text-sm text-slate-300">{subtitle}</p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="rounded-full border border-rose-300/20 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100">
-              Red: {redPlayer.name} ({state.scores[redPlayer.id] ?? 0})
-            </div>
-            <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white">
-              Black: {blackPlayer.name} ({state.scores[blackPlayer.id] ?? 0})
-            </div>
+    <GamePage>
+      <GameHud
+        eyebrow="Checkers"
+        title={statusText}
+        subtitle={subtitle}
+        rightSlot={(
+          <>
+            <GameBadge tone="neutral">Round {state.roundNumber}</GameBadge>
+            <GameBadge tone="danger">Red {state.scores[redPlayer.id] ?? 0}</GameBadge>
+            <GameBadge tone="neutral">Black {state.scores[blackPlayer.id] ?? 0}</GameBadge>
+          </>
+        )}
+        bottomSlot={(
+          <>
+            <GameBadge tone="neutral">Red: {redPlayer.name}</GameBadge>
+            <GameBadge tone="neutral">Black: {blackPlayer.name}</GameBadge>
             {state.phase === 'finished' && isHost ? (
-              <button
-                type="button"
-                disabled={isReplaying}
-                onClick={handlePlayAgain}
-                className="inline-flex items-center justify-center rounded-full bg-sky-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-70"
-              >
+              <GamePrimaryButton disabled={isReplaying} onClick={handlePlayAgain}>
                 {isReplaying ? 'Starting...' : 'Play again'}
-              </button>
+              </GamePrimaryButton>
             ) : null}
             {isHost ? (
-              <button
-                type="button"
-                disabled={isReturning}
-                onClick={handleReturnToLobby}
-                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-70"
-              >
+              <GameSecondaryButton disabled={isReturning} onClick={handleReturnToLobby}>
                 {isReturning ? 'Returning...' : 'Return to lobby'}
-              </button>
+              </GameSecondaryButton>
             ) : null}
-          </div>
-        </div>
-      </section>
+          </>
+        )}
+      />
 
       <section className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="min-h-0 rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.12),transparent_35%),linear-gradient(180deg,rgba(2,6,23,0.82),rgba(15,23,42,0.72))] p-5 shadow-2xl shadow-slate-950/30">
+        <GamePanel>
           <div className="flex h-full min-h-0 items-center justify-center">
             <CheckersBoard
               board={state.board}
@@ -238,9 +229,9 @@ export const CheckersView = ({
               onSquareClick={handleSquareClick}
             />
           </div>
-        </div>
+        </GamePanel>
 
-        <aside className="min-h-0 rounded-[28px] border border-white/10 bg-slate-950/55 p-5 shadow-2xl shadow-slate-950/20 backdrop-blur">
+        <GamePanel className="backdrop-blur">
           <div className="flex h-full min-h-0 flex-col gap-5">
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-400">Round info</div>
@@ -277,8 +268,8 @@ export const CheckersView = ({
               </div>
             )}
           </div>
-        </aside>
+        </GamePanel>
       </section>
-    </div>
+    </GamePage>
   );
 };
